@@ -13,9 +13,9 @@
 // Number of floats per vertex position.
 #define NUM_PER_POSITION 3
 // Number of shakes per vertex color.
-#define NUM_PER_COLOR 4
+#define NUM_PER_COLOR 3
 
-// These are all in */data.
+//shader source code strings
 const char VERT_SRC[] =
 "#version 120"
 "// The position data of the current vertex.\n"
@@ -55,12 +55,13 @@ float positions[] = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 
                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
 
-float colors[] = {1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 
-                0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 
-                1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 
-                1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 
-                0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 
-                1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f};  
+float colors[] = {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
+
 
 // Handle to shader program.
 GLuint shaderProgram;
@@ -236,16 +237,16 @@ void render(void)
     static float rot = 0;
     float projection[16];
     float modelview[16];
-    float translate[] = {0.0f, 0.0f, -5.0f};
-    mat4_identity(projection);
-    mat4_perspective(90.0, 640.0/480.0, 0.1, 1000.0, projection);
-    mat4_identity(modelview);
-    mat4_translate(modelview, translate, NULL);
-    mat4_rotateY(modelview, rot, NULL);
+    float translate[] = {0.0f, 0.0f, -5.0f}; //vector to translate by
+    mat4_perspective(90.0, 640.0/480.0, 0.1, 1000.0, projection);//set the projection matrix to a perspective transform
+    mat4_identity(modelview);//set the modelview matrix to identity
+    mat4_translate(modelview, translate, NULL); //[MDV] = [I] * [TRANSLATE]
+    mat4_rotateY(modelview, rot, NULL); //[MDV] = [I] * [TRANSLATE] * [ROTATION]
     rot += 0.01;
 	// Start using our shader program.
 	glUseProgram(shaderProgram);
 
+    //get the attribute locations
     int posAttrib = glGetAttribLocation(shaderProgram, "posAttrib");
     int colorAttrib = glGetAttribLocation(shaderProgram, "colorAttrib");
 	
@@ -258,9 +259,11 @@ void render(void)
 	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, positions);
 	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 0, colors);
 	
+    //get the uniform locations
     int projloc = glGetUniformLocation(shaderProgram, "projection");
     int modvloc = glGetUniformLocation(shaderProgram, "modelview");
     
+    //set the matrix uniform data
     glUniformMatrix4fv(projloc, 1, GL_FALSE, projection);
     glUniformMatrix4fv(modvloc, 1, GL_FALSE, modelview);
 	
@@ -274,6 +277,8 @@ void render(void)
 	glDisableVertexAttribArray(colorAttrib);
 	// For the same reasons we stop using the shader program.
 	glUseProgram(0);
+
+    //deal with any errors
     int err = glGetError();
     if(err != GL_NO_ERROR) {
         printf("ERROR: %d\n:",err);
